@@ -1,5 +1,7 @@
-import random
+import os
 
+from google import genai
+from django.conf import settings
 from django.db.models import Avg
 from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -13,9 +15,6 @@ from .serializers import (
     VoiceAnalysisSerializer,
 )
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Keyword-based stress engine
-# ──────────────────────────────────────────────────────────────────────────────
 
 STRESS_PATTERNS = {
     'crisis': {
@@ -56,48 +55,69 @@ POSITIVE_INDICATORS = [
     'better', 'improved', 'grateful', 'hopeful', 'okay', 'fine', 'relieved',
 ]
 
-BOT_RESPONSES = {
-    'crisis': [
-        "I hear you, and this is serious — you are not alone. "
-        "Please contact a crisis line right now. In the US call or text 988 (Suicide & Crisis Lifeline). "
-        "Your life matters and immediate support is available.",
-        "Thank you for trusting me with something this heavy. "
-        "Please reach out to emergency services or a crisis helpline immediately — "
-        "988 (US) or your local emergency number. I will stay here, but you deserve real human support right now.",
-    ],
-    'high': [
-        "That sounds incredibly heavy, and it takes real courage to put it into words. "
-        "Let's slow down together — can you take one deep breath right now? "
-        "I have some grounding techniques that can help.",
-        "I can hear how exhausted you are. You don't need to have it all figured out. "
-        "Can you tell me one small thing that felt even slightly okay today?",
-        "What you're feeling is valid. When everything feels like too much, start with just the next breath. "
-        "Would you like to try a quick coping exercise together?",
-    ],
-    'moderate': [
-        "That sounds really tough. Feelings like these are signals worth paying attention to, not pushing away. "
-        "What has been weighing on you most?",
-        "I understand. Stress and anxiety can feel relentless. "
-        "You've taken a good step by talking about it. Would it help to walk me through what's been happening?",
-        "Thank you for sharing. You're not alone in feeling this way. "
-        "Is there one specific thing that's been the hardest lately?",
-    ],
-    'low': [
-        "It sounds like things have been rough. You're handling more than you might realise. "
-        "What would feel like a small win for you today?",
-        "I hear you. Even everyday struggles deserve attention. Is there something specific on your mind?",
-    ],
-    'positive': [
-        "That's really good to hear! Positive moments are worth holding onto. What's been going well for you?",
-        "I'm glad things are feeling better. It sounds like you're finding your footing — keep noticing those moments.",
-    ],
-    'neutral': [
-        "I'm here and listening. Tell me more about what's on your mind.",
-        "Thank you for sharing. How long have you been feeling this way?",
-        "I'm with you. What would be most helpful to talk through right now?",
-        "Go on — I want to understand what you're going through.",
-    ],
-}
+
+def _extract_response_text(response):
+    text = getattr(response, 'text', None)
+    if text:
+        return text.strip()
+
+    candidates = getattr(response, 'candidates', None) or []
+    for candidate in candidates:
+        content = getattr(candidate, 'content', None)
+        parts = getattr(content, 'parts', None) or []
+        for part in parts:
+            part_text = getattr(part, 'text', None)
+            if part_text:
+                return part_text.strip()
+
+    return ''
+
+
+def _gemini_reply(level, score, keywords, session):
+    """Generate a response using the Gemini API with conversation context."""
+    api_key = getattr(settings, 'GEMINI_API_KEY', '') or os.environ.get('GEMINI_API', '')
+    if not api_key:
+        return "I'm here with you. Tell me more about how you're feeling."
+
+    client = genai.Client(api_key=api_key)
+
+    history_qs = session.messages.order_by('-created_at')[:12]
+    history_lines = '\n'.join(
+        f"{'USER' if message.role == 'user' else 'JINX'}: {message.text}"
+        for message in reversed(list(history_qs))
+    )
+
+    crisis_addendum = (
+        "\n\nIMPORTANT: The latest user message contains crisis-level stress signals. "
+        "You must gently but clearly encourage the user to contact a crisis line "
+        "such as 988 in the US or their local emergency services while remaining calm and compassionate."
+    ) if level == 'crisis' else ''
+
+    prompt = (
+        "You are Jinx, a warm and empathetic AI mental wellness companion inside the MindGuard app. "
+        "Listen without judgment, validate feelings, and offer practical coping support. "
+        "Do not diagnose conditions. Keep the response concise, natural, and supportive. "
+        "If the user appears in immediate danger, encourage urgent real-world help. "
+        f"The latest message was classified as '{level}' with risk score {score:.2f}. "
+        f"Detected keywords: {', '.join(keywords) if keywords else 'none'}."
+        f"{crisis_addendum}\n\n"
+        "Conversation so far:\n"
+        f"{history_lines}\n\n"
+        "Reply as Jinx only."
+    )
+
+    try:
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=prompt,
+        )
+        response_text = _extract_response_text(response)
+        if response_text:
+            return response_text
+    except Exception:
+        pass
+
+    return "I'm here with you. Could you tell me a bit more about how you're feeling?"
 
 
 def analyze_text_stress(text):
@@ -131,9 +151,6 @@ def _get_or_create_session(session_id_str):
     return ChatSession.objects.create()
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Views
-# ──────────────────────────────────────────────────────────────────────────────
 
 class ChatView(APIView):
     """POST /api/mental-health/chat/"""
@@ -160,7 +177,7 @@ class ChatView(APIView):
         session.overall_risk_score = round(avg, 3)
         session.save()
 
-        bot_text = random.choice(BOT_RESPONSES.get(level, BOT_RESPONSES['neutral']))
+        bot_text = _gemini_reply(level, score, keywords, session)
 
         if score >= 0.7:
             coping_qs = CopingResource.objects.filter(is_active=True).order_by('?')[:3]

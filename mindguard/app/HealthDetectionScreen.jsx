@@ -26,7 +26,6 @@ export default function HealthDetectionScreen() {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
 
-    // --- ANIMATION VALUES ---
     const scanAnim = useRef(new Animated.Value(0)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -35,7 +34,7 @@ export default function HealthDetectionScreen() {
             Animated.loop(
                 Animated.sequence([
                     Animated.timing(scanAnim, {
-                        toValue: 240, 
+                        toValue: 240,
                         duration: 1500,
                         useNativeDriver: true,
                     }),
@@ -116,7 +115,7 @@ export default function HealthDetectionScreen() {
 
         try {
             const response = await axios.post(
-                "http://YOUR_IP_HERE:8000/api/health-detect/", 
+                "192.168.137.1/api/health-detect/",
                 formData,
                 { headers: { "Content-Type": "multipart/form-data" } }
             );
@@ -139,20 +138,20 @@ export default function HealthDetectionScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="dark-content" />
+            <StatusBar barStyle="light-content" />
             <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-                
+
                 {/* Dashboard Style Header */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color="#1E293B" />
+                        <Ionicons name="arrow-back" size={24} color="#38bdf8" />
                     </TouchableOpacity>
-                    <View>
+                    <View style={{ alignItems: 'center' }}>
                         <Text style={styles.headerLabel}>DASHBOARD</Text>
                         <Text style={styles.title}>Health Scanner</Text>
                     </View>
                     <TouchableOpacity onPress={resetScan} style={styles.refreshBtn}>
-                        <Ionicons name="refresh" size={20} color="#64748B" />
+                        <Ionicons name="refresh" size={20} color="#38bdf8" />
                     </TouchableOpacity>
                 </View>
 
@@ -177,7 +176,7 @@ export default function HealthDetectionScreen() {
                         ) : (
                             <TouchableOpacity style={styles.uploadPlaceholder} onPress={pickImage}>
                                 <View style={styles.uploadIconCircle}>
-                                    <Ionicons name="cloud-upload-outline" size={32} color="#3B82F6" />
+                                    <Ionicons name="cloud-upload-outline" size={32} color="#38bdf8" />
                                 </View>
                                 <Text style={styles.uploadText}>Tap to Upload</Text>
                             </TouchableOpacity>
@@ -188,11 +187,11 @@ export default function HealthDetectionScreen() {
                     {!result && (
                         <View style={styles.actionRow}>
                             <TouchableOpacity style={styles.outlineBtn} onPress={openCamera}>
-                                <Ionicons name="camera-outline" size={20} color="#3B82F6" />
+                                <Ionicons name="camera-outline" size={20} color="#38bdf8" />
                                 <Text style={styles.outlineBtnText}>Camera</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.outlineBtn} onPress={pickImage}>
-                                <Ionicons name="images-outline" size={20} color="#3B82F6" />
+                                <Ionicons name="images-outline" size={20} color="#38bdf8" />
                                 <Text style={styles.outlineBtnText}>Gallery</Text>
                             </TouchableOpacity>
                         </View>
@@ -205,7 +204,7 @@ export default function HealthDetectionScreen() {
                             disabled={!image || loading}
                         >
                             {loading ? (
-                                <ActivityIndicator color="#fff" />
+                                <ActivityIndicator color="#020617" />
                             ) : (
                                 <Text style={styles.primaryBtnText}>Run Diagnostics</Text>
                             )}
@@ -217,7 +216,7 @@ export default function HealthDetectionScreen() {
                 {result && (
                     <Animated.View style={[styles.resultWidget, { opacity: fadeAnim }]}>
                         <View style={styles.widgetHeader}>
-                            <Ionicons name="analytics" size={20} color="#3B82F6" />
+                            <Ionicons name="analytics" size={20} color="#38bdf8" />
                             <Text style={styles.widgetHeaderText}>ANALYSIS REPORT</Text>
                         </View>
 
@@ -248,8 +247,10 @@ export default function HealthDetectionScreen() {
 }
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#F1F5F9' }, // Light Gray Dashboard BG
+    safeArea: { flex: 1, backgroundColor: '#06101c' },
     scrollContainer: { paddingBottom: 40, paddingHorizontal: 20 },
+
+    // Header
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -258,64 +259,73 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     backButton: {
-        padding: 8,
-        backgroundColor: '#fff',
-        borderRadius: 10,
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        backgroundColor: '#0f172a',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    headerLabel: { fontSize: 10, fontWeight: '700', color: '#64748B', letterSpacing: 1 },
-    title: { fontSize: 24, fontWeight: '800', color: '#1E293B' },
-    refreshBtn: { padding: 8 },
+    headerLabel: { fontSize: 10, fontWeight: '800', color: '#64748b', letterSpacing: 1 },
+    title: { fontSize: 20, fontWeight: '800', color: '#f8fafc' },
+    refreshBtn: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        backgroundColor: '#0f172a',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 
     // Main Card Style
     mainCard: {
-        backgroundColor: '#fff',
-        borderRadius: 24,
+        backgroundColor: '#0f172a',
+        borderRadius: 20,
         padding: 20,
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
         marginBottom: 20,
     },
-    cardTitle: { fontSize: 18, fontWeight: '700', color: '#1E293B', marginBottom: 4 },
-    cardSubtitle: { fontSize: 13, color: '#64748B', marginBottom: 20 },
-    
+    cardTitle: { fontSize: 17, fontWeight: '700', color: '#f8fafc', marginBottom: 4 },
+    cardSubtitle: { fontSize: 13, color: '#94a3b8', marginBottom: 20 },
+
     imageBox: {
         width: '100%',
         height: 240,
         borderRadius: 16,
-        backgroundColor: '#F8FAFC',
-        borderWidth: 1,
-        borderColor: '#E2E8F0',
+        backgroundColor: '#0b1525',
+        borderWidth: 1.5,
+        borderColor: '#1e3a8a',
         borderStyle: 'dashed',
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    imageBoxSuccess: { borderStyle: 'solid', borderColor: '#3B82F6', borderWidth: 2 },
+    imageBoxSuccess: { borderStyle: 'solid', borderColor: '#38bdf8', borderWidth: 2 },
     imageContainer: { width: '100%', height: '100%' },
     image: { width: '100%', height: '100%', resizeMode: 'cover' },
-    
+
     uploadPlaceholder: { alignItems: 'center' },
     uploadIconCircle: {
         width: 64,
         height: 64,
         borderRadius: 32,
-        backgroundColor: '#EFF6FF',
+        backgroundColor: '#08111f',
+        borderWidth: 1,
+        borderColor: '#1e3a8a',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 10,
     },
-    uploadText: { color: '#3B82F6', fontWeight: '600', fontSize: 14 },
-    
+    uploadText: { color: '#38bdf8', fontWeight: '600', fontSize: 14 },
+
     scannerLine: {
         position: 'absolute',
         width: '100%',
         height: 4,
-        backgroundColor: '#3B82F6',
-        shadowColor: '#3B82F6',
-        shadowOpacity: 0.5,
-        shadowRadius: 5,
+        backgroundColor: '#38bdf8',
+        shadowColor: '#38bdf8',
+        shadowOpacity: 0.8,
+        shadowRadius: 10,
+        elevation: 5,
     },
 
     actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
@@ -327,42 +337,42 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#BFDBFE',
-        backgroundColor: '#fff',
+        borderColor: '#1e3a8a',
+        backgroundColor: '#0b1525',
     },
-    outlineBtnText: { marginLeft: 8, color: '#3B82F6', fontWeight: '600' },
-    
+    outlineBtnText: { marginLeft: 8, color: '#38bdf8', fontWeight: '600' },
+
     primaryBtn: {
-        backgroundColor: '#1E293B', // Dark Navy Dashboard Button
+        backgroundColor: '#38bdf8',
         paddingVertical: 16,
         borderRadius: 12,
         alignItems: 'center',
         marginTop: 15,
     },
-    primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-    btnDisabled: { backgroundColor: '#94A3B8' },
+    primaryBtnText: { color: '#020617', fontWeight: '800', fontSize: 15 },
+    btnDisabled: { opacity: 0.4 },
 
     // Result Widget Style
     resultWidget: {
-        backgroundColor: '#fff',
-        borderRadius: 24,
+        backgroundColor: '#0f172a',
+        borderRadius: 20,
         padding: 20,
-        borderLeftWidth: 6,
-        borderLeftColor: '#3B82F6',
+        borderLeftWidth: 4,
+        borderLeftColor: '#38bdf8',
     },
     widgetHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
-    widgetHeaderText: { fontSize: 12, fontWeight: '800', color: '#64748B', marginLeft: 8, letterSpacing: 0.5 },
-    
+    widgetHeaderText: { fontSize: 12, fontWeight: '800', color: '#38bdf8', marginLeft: 8, letterSpacing: 0.5 },
+
     resultRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
-    resLabel: { fontSize: 12, color: '#64748B', marginBottom: 2 },
-    resValue: { fontSize: 20, fontWeight: '800', color: '#1E293B' },
-    
-    confidenceBadge: { backgroundColor: '#DBEAFE', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-    confidenceText: { color: '#1E40AF', fontWeight: '700', fontSize: 12 },
-    
-    infoBox: { backgroundColor: '#F8FAFC', padding: 15, borderRadius: 12, marginBottom: 20 },
-    infoText: { fontSize: 14, color: '#475569', lineHeight: 20 },
-    
-    resetBtnFull: { paddingVertical: 15, alignItems: 'center', borderTopWidth: 1, borderTopColor: '#F1F5F9' },
-    resetBtnText: { color: '#64748B', fontWeight: '600' },
+    resLabel: { fontSize: 12, color: '#64748b', marginBottom: 2, fontWeight: '600' },
+    resValue: { fontSize: 20, fontWeight: '800', color: '#f8fafc' },
+
+    confidenceBadge: { backgroundColor: '#0b1525', borderWidth: 1, borderColor: '#1e3a8a', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
+    confidenceText: { color: '#38bdf8', fontWeight: '700', fontSize: 12 },
+
+    infoBox: { backgroundColor: '#0b1525', padding: 15, borderRadius: 12, marginBottom: 20 },
+    infoText: { fontSize: 14, color: '#cbd5e1', lineHeight: 20 },
+
+    resetBtnFull: { paddingVertical: 15, alignItems: 'center', borderTopWidth: 1, borderTopColor: '#1e293b' },
+    resetBtnText: { color: '#38bdf8', fontWeight: '700', fontSize: 15 },
 });

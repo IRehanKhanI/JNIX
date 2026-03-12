@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unknown-property */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -15,7 +14,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Canvas } from '@react-three/fiber/native';
 import { Audio } from 'expo-av';
 import {
     sendMentalHealthChat,
@@ -26,10 +24,10 @@ import {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const RISK_META = {
-    low:      { label: 'Low Stress',        color: '#22c55e', bg: '#052e16' },
-    moderate: { label: 'Moderate',          color: '#eab308', bg: '#1c1906' },
-    high:     { label: 'High Stress',       color: '#f97316', bg: '#1c0a02' },
-    crisis:   { label: 'Crisis — Get Help', color: '#ef4444', bg: '#1c0606' },
+    low: { label: 'Low Stress', color: '#22c55e', bg: '#052e16' },
+    moderate: { label: 'Moderate', color: '#eab308', bg: '#1c1906' },
+    high: { label: 'High Stress', color: '#f97316', bg: '#1c0a02' },
+    crisis: { label: 'Crisis — Get Help', color: '#ef4444', bg: '#1c0606' },
 };
 
 function riskKey(score) {
@@ -42,43 +40,6 @@ function riskKey(score) {
 const INITIAL_MESSAGES = [
     { id: 'w0', role: 'bot', text: "Hi, I'm Jinx — your mental wellness companion. How are you feeling right now?" },
 ];
-
-// ─── 3-D Robot ───────────────────────────────────────────────────────────────
-
-function RobotHead() {
-    return (
-        <group position={[0, -0.6, 0]}>
-            <mesh position={[0, 1.8, -0.1]} rotation={[0.4, 0, 0]}>
-                <torusGeometry args={[0.7, 0.04, 16, 64]} />
-                <meshStandardMaterial color="#6ee7f9" emissive="#22d3ee" emissiveIntensity={0.8} />
-            </mesh>
-            <mesh position={[0, 1.0, 0]}>
-                <sphereGeometry args={[0.65, 48, 48]} />
-                <meshStandardMaterial color="#dbeafe" metalness={0.2} roughness={0.3} />
-            </mesh>
-            <mesh position={[-0.22, 1.15, 0.55]}>
-                <sphereGeometry args={[0.09, 24, 24]} />
-                <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={1.8} />
-            </mesh>
-            <mesh position={[0.22, 1.15, 0.55]}>
-                <sphereGeometry args={[0.09, 24, 24]} />
-                <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={1.8} />
-            </mesh>
-            <mesh position={[0, 0.85, 0.58]}>
-                <boxGeometry args={[0.25, 0.03, 0.03]} />
-                <meshStandardMaterial color="#1d4ed8" emissive="#1d4ed8" emissiveIntensity={0.9} />
-            </mesh>
-            <mesh position={[0, 0.35, 0]}>
-                <cylinderGeometry args={[0.25, 0.35, 0.5, 32]} />
-                <meshStandardMaterial color="#93c5fd" metalness={0.4} roughness={0.2} />
-            </mesh>
-            <mesh position={[0, 0.05, 0]}>
-                <boxGeometry args={[1.2, 0.2, 0.7]} />
-                <meshStandardMaterial color="#67e8f9" metalness={0.3} roughness={0.4} />
-            </mesh>
-        </group>
-    );
-}
 
 // ─── Typing bubble ────────────────────────────────────────────────────────────
 
@@ -206,7 +167,7 @@ function VoiceTab({ sessionId, onSessionUpdate }) {
             Animated.loop(
                 Animated.sequence([
                     Animated.timing(pulseAnim, { toValue: 1.18, duration: 650, useNativeDriver: true }),
-                    Animated.timing(pulseAnim, { toValue: 1.0,  duration: 650, useNativeDriver: true }),
+                    Animated.timing(pulseAnim, { toValue: 1.0, duration: 650, useNativeDriver: true }),
                 ])
             ).start();
         } else {
@@ -257,10 +218,10 @@ function VoiceTab({ sessionId, onSessionUpdate }) {
 
     const btnLabel = { idle: '🎙  Speak', recording: '⏹  Stop', processing: '', done: '↺  Retry' }[recState];
     const hintText = {
-        idle:       'Tap Speak and talk for 10–30 seconds.\nJinx will analyse stress patterns in your voice.',
-        recording:  'Recording… tap Stop when done.',
+        idle: 'Tap Speak and talk for 10–30 seconds.\nJinx will analyse stress patterns in your voice.',
+        recording: 'Recording… tap Stop when done.',
         processing: 'Analysing your voice patterns…',
-        done:       'Analysis complete.',
+        done: 'Analysis complete.',
     }[recState];
 
     return (
@@ -409,17 +370,10 @@ export default function MentalHealthScreen() {
                     </View>
                 </View>
 
-                {/* ── Robot hero ── */}
+                {/* ── Avatar hero ── */}
                 <View style={styles.heroRow}>
-                    <View style={styles.canvasShell}>
-                        <Canvas style={styles.canvas} camera={{ position: [0, 0.5, 4.5], fov: 35 }}>
-                            <color attach="background" args={['#08111f']} />
-                            <ambientLight intensity={1.5} />
-                            <directionalLight position={[3, 5, 3]} intensity={2} color="#dbeafe" />
-                            <pointLight position={[-3, 1, 2]} intensity={10} color="#22d3ee" />
-                            <pointLight position={[2, -1, 2]} intensity={5} color="#2563eb" />
-                            <RobotHead />
-                        </Canvas>
+                    <View style={styles.avatarShell}>
+                        <Text style={styles.avatarText}>J</Text>
                     </View>
                     <View style={styles.heroInfo}>
                         <Text style={styles.heroName}>Jinx</Text>
@@ -485,8 +439,8 @@ const styles = StyleSheet.create({
 
     // Hero
     heroRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 12, gap: 16 },
-    canvasShell: { width: 110, height: 110, borderRadius: 55, overflow: 'hidden', backgroundColor: '#08111f', borderWidth: 2, borderColor: '#1e3a8a' },
-    canvas: { flex: 1 },
+    avatarShell: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#0f172a', borderWidth: 2, borderColor: '#38bdf8', alignItems: 'center', justifyContent: 'center' },
+    avatarText: { color: '#38bdf8', fontSize: 32, fontWeight: '800' },
     heroInfo: { flex: 1, gap: 6 },
     heroName: { color: '#f8fafc', fontSize: 22, fontWeight: '800' },
     onlinePill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, backgroundColor: '#022c22' },

@@ -12,9 +12,15 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env from the project root (same directory as manage.py)
+load_dotenv(BASE_DIR / '.env')
+
+GEMINI_API_KEY = os.environ.get('GEMINI_API', '')
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,7 +32,7 @@ SECRET_KEY = 'django-insecure-zlr!_vi1ku%*p4%p8pwe8tug8i#vfldchwm5l*)1_imp60dd!s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
