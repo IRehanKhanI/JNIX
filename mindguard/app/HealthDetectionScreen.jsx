@@ -115,7 +115,7 @@ export default function HealthDetectionScreen() {
 
         try {
             const response = await axios.post(
-                "192.168.137.1/api/health-detect/",
+                "http://10.55.184.66:8000/api/health-detect/",
                 formData,
                 { headers: { "Content-Type": "multipart/form-data" } }
             );

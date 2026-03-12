@@ -1,4 +1,8 @@
 import { Stack } from "expo-router";
+import { registerBackgroundFallDetection } from "../src/components/services/backgroundTasks";
+
+// Initialize global offline background task monitoring
+registerBackgroundFallDetection();
 
 export default function RootLayout() {
   return (

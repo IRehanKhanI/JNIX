@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/health-detect/', include('health_detect.urls')),
     path('api/fall-detect/', include('fall_detection.urls')),
     path('api/mental-health/', include('mental_health.urls')),
+    path('api/users/', include('users.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

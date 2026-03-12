@@ -1,8 +1,88 @@
 import Constants from "expo-constants";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const envBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
 const configBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl?.trim();
-const BASE_URL = (envBaseUrl || configBaseUrl || "").replace(/\/+$/, "");
+const BASE_URL = (envBaseUrl || configBaseUrl || "http://10.55.184.66:8000/api").replace(/\/+$/, "");
+
+/**
+ * Helper function to retrieve the current user's auth token
+ */
+const getAuthToken = async () => {
+    try {
+        return await AsyncStorage.getItem('userToken');
+    } catch (e) {
+        return null;
+    }
+};
+
+/**
+ * Register a new user with emergency contacts
+ */
+export const registerUser = async (name, email, password, sms, whatsapp) => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/register/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, emergency_sms: sms, emergency_whatsapp: whatsapp })
+        });
+        const data = await response.json();
+        if (response.ok && data.token) {
+            await AsyncStorage.setItem('userToken', data.token);
+        }
+        return data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * Authenticate login
+ */
+export const authenticateUser = async (email, password) => {
+    try {
+        const response = await fetch(`${BASE_URL}/users/login/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (response.ok && data.token) {
+            await AsyncStorage.setItem('userToken', data.token);
+            
+            // Save to Identity List
+            let existingUsers = [];
+            try {
+                const existing = await AsyncStorage.getItem('savedUsers');
+                if (existing) existingUsers = JSON.parse(existing);
+            } catch(e) {}
+            
+            // Avoid duplicates by email, keep latest
+            existingUsers = existingUsers.filter(u => u.email !== data.email);
+            existingUsers.push({
+                name: data.name || email.split('@')[0],
+                email: data.email || email,
+                token: data.token,
+                role: 'USER'
+            });
+            await AsyncStorage.setItem('savedUsers', JSON.stringify(existingUsers));
+        }
+        return data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * Logout User
+ */
+export const logoutUser = async () => {
+    try {
+        await AsyncStorage.removeItem('userToken');
+    } catch (e) {
+        console.error("Error logging out:", e);
+    }
+};
 
 const buildUrl = (path) => {
   if (!BASE_URL) {

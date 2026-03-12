@@ -48,12 +48,20 @@ INSTALLED_APPS = [
 
 
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     'health_detect',
     'fall_detection',
     'signTranslate',
     'mental_health',
+    'users',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
